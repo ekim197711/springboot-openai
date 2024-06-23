@@ -12,30 +12,13 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class OpenAiService {
+public class OpenAiServiceChatGpt3 {
     RestTemplate restTemplate = new RestTemplate();
-
-    public String getModels() {
-        String url = "https://api.openai.com/v1/models";
-        RequestEntity<Void> request = RequestEntity.get(URI.create(url)).headers(headers()).build();
-        ResponseEntity<String> response = restTemplate.exchange(request, String.class);
-        return response.getBody();
-    }
-
-    private HttpHeaders headers() {
-        String openaiApiKey = System.getenv("OPENAI_API_KEY");
-        String openaiProjectId = System.getenv("OPENAI_PROJECT_ID");
-        String openaiOrgId = System.getenv("OPENAI_ORG_ID");
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Authorization", "Bearer " + openaiApiKey);
-        httpHeaders.set("OpenAI-Organization", openaiOrgId);
-        httpHeaders.set("OpenAI-Project", openaiProjectId);
-        return httpHeaders;
-    }
 
     private HttpHeaders headersTryGpt3() {
         String openaiApiKey = System.getenv("OPENAI_API_KEY");
@@ -45,20 +28,21 @@ public class OpenAiService {
         return httpHeaders;
     }
 
-    public String tryGpt3(String question) {
-        String url = "https://api.openai.com/v1/chat/completions \\";
+    public String tryGpt3(List<String> questions) {
+        String url = "https://api.openai.com/v1/chat/completions";
         Map<String, Object> dataToPost = new HashMap<>();
         dataToPost.put("model", "gpt-3.5-turbo");
-        dataToPost.put("messages", List.of(Map.of(
+        dataToPost.put("messages", questions.stream().map(s -> (Map.of(
                 "role", "user",
-                "content", question
-        )));
-        dataToPost.put("temperature", "0.7");
+                "content", s
+        ))).collect(Collectors.toList()));
+        dataToPost.put("temperature", 0.9);
 
 
-        RequestEntity<Void> request = RequestEntity.get(
-                        URI.create(url)).headers(headersTryGpt3())
-                .build();
+        RequestEntity<Map<String, Object>> request = RequestEntity.post(
+                        URI.create(url))
+                .headers(headersTryGpt3())
+                .body(dataToPost);
         ResponseEntity<String> response = restTemplate.exchange(request, String.class);
         return response.getBody();
     }
