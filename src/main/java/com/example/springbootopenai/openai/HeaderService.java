@@ -15,6 +15,14 @@ public class HeaderService {
         return httpHeaders;
     }
 
+    public HttpHeaders headersImageGeneration() {
+        String openaiApiKey = System.getenv("OPENAI_API_KEY");
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Authorization", "Bearer " + openaiApiKey);
+        httpHeaders.set(HttpHeaders.CONTENT_TYPE, "application/json");
+        return httpHeaders;
+    }
+
     public HttpHeaders headersMultipartFormData() {
         String openaiApiKey = System.getenv("OPENAI_API_KEY");
         HttpHeaders httpHeaders = new HttpHeaders();
